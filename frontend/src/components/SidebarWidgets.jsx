@@ -4,8 +4,7 @@ import { useMemo } from "react";
 import { useStore } from "../state/useStore";
 
 export function TrendingTopics() {
-  // Important: compute derived values in a memo so we don't return a new array
-  // from the Zustand selector on every render (which can cause render loops).
+ 
   const blogs = useStore((s) => s.blogs);
   const topics = useMemo(() => {
     const map = new Map();
