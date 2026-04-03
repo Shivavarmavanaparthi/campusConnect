@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { FileText, Search, Sparkles, TrendingUp } from "lucide-react";
+import { FileText, FileUser, Search, Sparkles, TrendingUp } from "lucide-react";
 import { useMemo } from "react";
 import { useStore } from "../state/useStore";
 
@@ -52,8 +52,8 @@ export function WorkSmarter() {
       <Sparkles className="pointer-events-none absolute -bottom-2 -right-2 h-24 w-24 text-violet-200/60" />
       <h3 className="relative font-bold text-violet-800">Work Smarter</h3>
       <p className="relative mt-1 text-xs leading-relaxed text-gray-600">
-        AI tools tuned for study sessions — summarize PDFs and discover what to read
-        next.
+        AI tools tuned for study sessions — summarize PDFs, build a LaTeX resume PDF,
+        and discover what to read next.
       </p>
       <div className="relative mt-4 space-y-2">
         <Link
@@ -62,6 +62,13 @@ export function WorkSmarter() {
         >
           <FileText className="h-4 w-4 text-violet-600" />
           PDF Summarizer
+        </Link>
+        <Link
+          to="/resume-builder"
+          className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2.5 text-xs font-medium text-gray-800 shadow-sm transition hover:bg-gray-50"
+        >
+          <FileUser className="h-4 w-4 text-violet-600" />
+          Resume Builder
         </Link>
         <Link
           to="/resources"

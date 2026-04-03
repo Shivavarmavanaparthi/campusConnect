@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { CloudUpload, FileText, Sparkles } from "lucide-react";
 import { summarizePDF } from "../lib/api";
+import AiToolsNav from "../components/AiToolsNav";
 
 export default function Summarizer() {
   const [tab, setTab] = useState("pdf");
@@ -56,6 +57,8 @@ export default function Summarizer() {
           generate a concise summary.
         </p>
       </div>
+
+      <AiToolsNav />
 
       <div className="rounded-2xl bg-white p-6 shadow-xl ring-1 ring-gray-100 sm:p-8">
         <div className="mb-6 flex rounded-xl bg-gray-100 p-1">

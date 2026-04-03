@@ -6,6 +6,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import Resources from "./pages/Resources";
 import Summarizer from "./pages/Summarizer";
+import ResumeBuilder from "./pages/ResumeBuilder";
 import Profile from "./pages/Profile";
 import WriteBlog from "./pages/WriteBlog";
 import EditBlog from "./pages/EditBlog";
@@ -35,6 +36,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Summarizer />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/resume-builder"
+            element={
+              <ProtectedRoute>
+                <ResumeBuilder />
               </ProtectedRoute>
             }
           />

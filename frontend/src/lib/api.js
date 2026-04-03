@@ -67,3 +67,9 @@ export const summarizePDF = (formData) =>
   API.post("/ai/summarize", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
+
+export const buildResumePDF = (payload) =>
+  API.post("/ai/resume/pdf", payload, {
+    responseType: "blob",
+    headers: { "Content-Type": "application/json" },
+  });
