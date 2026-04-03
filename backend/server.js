@@ -8,7 +8,7 @@ import cors from "cors";
 import aiRoute from "./routes/ai.route.js";
 import cookieParser from "cookie-parser";
 
-// Ensure backend/.env values are used even if your shell already has env vars set.
+
 dotenv.config({ override: true });
 
 const app = express();
