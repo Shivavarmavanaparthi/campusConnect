@@ -37,7 +37,7 @@ export default function BlogCard({
   return (
     <article className="flex flex-col overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-gray-100 transition hover:shadow-lg">
       <Link to={`/blogs/${blog._id}`} className="block shrink-0">
-        <div className="aspect-[16/10] w-full overflow-hidden bg-gray-100">
+        <div className="aspect-16/10 w-full overflow-hidden bg-gray-100">
           <img
             src={img}
             alt=""
@@ -51,9 +51,21 @@ export default function BlogCard({
       </Link>
       <div className="flex flex-1 flex-col p-4 sm:p-5">
         <div className="mb-2 flex items-center justify-between gap-2 text-xs">
-          <span className="font-medium capitalize text-blue-600">{category}</span>
-          <span className="text-gray-400">{formatDate(blog.createdAt)}</span>
-        </div>
+  <div className="flex items-center gap-2">
+    <span className="font-medium capitalize text-blue-600">
+      {category}
+    </span>
+
+   
+    {blog.views > 16 && (
+      <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-600 animate-pulse">
+        🔥 Trending
+      </span>
+    )}
+  </div>
+
+  <span className="text-gray-400">{formatDate(blog.createdAt)}</span>
+</div>
         <Link to={`/blogs/${blog._id}`}>
           <h3 className="mb-2 line-clamp-2 text-lg font-bold leading-snug text-gray-900 hover:text-violet-700">
             {blog.title}
@@ -112,8 +124,10 @@ export default function BlogCard({
               Delete
             </button>
           </div>
+          
         )}
       </div>
     </article>
+    
   );
 }

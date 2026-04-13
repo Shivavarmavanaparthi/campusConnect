@@ -12,6 +12,10 @@ function sanitizePayload(body) {
   const fullName = isNonEmptyString(body.fullName) ? body.fullName.trim() : "";
   if (!fullName) return { error: "fullName is required." };
 
+  // Allow custom styling to pass through
+  const accentColor = isNonEmptyString(body.accentColor) ? body.accentColor.trim() : "#0e6e55";
+  const lineStyle = isNonEmptyString(body.lineStyle) ? body.lineStyle.trim() : "solid";
+
   const skills = Array.isArray(body.skills)
     ? body.skills
         .filter((s) => s && typeof s === "object")
@@ -85,6 +89,8 @@ function sanitizePayload(body) {
   return {
     data: {
       fullName,
+      accentColor,
+      lineStyle,
       phone: String(body.phone || "").trim(),
       phoneTel: String(body.phoneTel || "").trim(),
       email: String(body.email || "").trim(),
@@ -109,7 +115,9 @@ export const generateResumePdf = async (req, res) => {
       return res.status(400).json({ message: parsed.error });
     }
 
+    // Now uses accentColor and lineStyle within buildResumeTex
     const tex = buildResumeTex(parsed.data);
+    
     const safeName = String(parsed.data.fullName || "resume")
       .replace(/[^\w\s-]/g, "")
       .replace(/\s+/g, "-")
@@ -117,30 +125,33 @@ export const generateResumePdf = async (req, res) => {
 
     let pdf;
     try {
+      // Main LaTeX compilation
       pdf = await compileResumePdf(tex);
       res.setHeader("X-Resume-Pdf-Source", "latex");
     } catch (err) {
       if (err.code !== "LATEX_FAILED") throw err;
+      
       const allowFallback = process.env.RESUME_PDFLIB_FALLBACK !== "false";
       if (!allowFallback) {
         console.error("[resume] LaTeX failed (fallback disabled)\n", err.logTail);
         return res.status(503).json({
           message:
             err.message ||
-            "Could not compile PDF. Install MiKTeX or TeX Live, or set PDFLATEX_PATH in backend/.env.",
+            "Could not compile PDF. LaTeX engine not found.",
           detail: err.logTail?.slice?.(-1500) || "",
         });
       }
-      console.warn("[resume] LaTeX unavailable; generating PDF with pdf-lib (simplified layout).");
+
+      console.warn("[resume] LaTeX unavailable; falling back to pdf-lib.");
       try {
+        // Fallback now correctly receives accentColor and lineStyle in parsed.data
         const bytes = await buildResumePdfLib(parsed.data);
         pdf = Buffer.from(bytes);
         res.setHeader("X-Resume-Pdf-Source", "pdf-lib");
       } catch (fallbackErr) {
         console.error("[resume] pdf-lib fallback failed", fallbackErr);
         return res.status(503).json({
-          message:
-            "Could not generate PDF. Install MiKTeX and ensure pdflatex works, or check server logs.",
+          message: "Could not generate PDF with fallback library.",
           detail: String(fallbackErr?.message || fallbackErr),
         });
       }

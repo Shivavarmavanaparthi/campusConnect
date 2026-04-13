@@ -63,10 +63,7 @@ export const uploadResource = (formData) =>
   });
 export const deleteResource = (id) => API.delete(`/resources/${id}`);
 
-export const summarizePDF = (formData) =>
-  API.post("/ai/summarize", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+
 
 export const buildResumePDF = (payload) =>
   API.post("/ai/resume/pdf", payload, {

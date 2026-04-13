@@ -15,20 +15,37 @@ export const getAllBlogs = async (req, res) => {
 };
 
 export const getBlogById = async (req, res) => {
-    try {
-        const blog = await Blog.findById(req.params.id)
-        .populate("author","name")
+  try {
+    const blog = await Blog.findById(req.params.id).populate("author", "name");
 
-        if (!blog) {
-            return res.status(404).json({ message: "Cannot find the blog" });
-        }
-
-        res.json({ blog });
-
-    } catch (error) {
-        console.log("Error in getSingleBlog", error.message);
-        res.status(500).json({ message: "Internal server error" });
+    if (!blog) {
+      return res.status(404).json({ message: "Cannot find the blog" });
     }
+
+    const userId = req.user?._id;
+
+   
+    const alreadyViewed =
+      userId &&
+      blog.viewedBy.some((id) => id.toString() === userId.toString());
+
+    if (userId && !alreadyViewed) {
+      blog.views += 1;
+      blog.viewedBy.push(userId);
+
+   
+      if (blog.viewedBy.length > 1000) {
+        blog.viewedBy.shift();
+      }
+
+      await blog.save();
+    }
+
+    res.json({ blog });
+  } catch (error) {
+    console.log("Error in getBlogById:", error.message);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 export const createBlog = async (req, res) => {

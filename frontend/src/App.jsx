@@ -5,7 +5,7 @@ import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import Resources from "./pages/Resources";
-import Summarizer from "./pages/Summarizer";
+
 import ResumeBuilder from "./pages/ResumeBuilder";
 import Profile from "./pages/Profile";
 import WriteBlog from "./pages/WriteBlog";
@@ -31,14 +31,7 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/resources" element={<Resources />} />
-          <Route
-            path="/summarizer"
-            element={
-              <ProtectedRoute>
-                <Summarizer />
-              </ProtectedRoute>
-            }
-          />
+          
           <Route
             path="/resume-builder"
             element={

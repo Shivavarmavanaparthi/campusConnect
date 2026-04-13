@@ -27,8 +27,13 @@ export const useStore = create((set, get) => ({
     try {
       const res = await getProfile();
       set({ user: res.data.user, authLoading: false });
-    } catch {
-      set({ user: null, authLoading: false });
+    } catch (err) {
+      const status = err.response?.status;
+      if (status === 401 || status === 403) {
+        set({ user: null, authLoading: false });
+      } else {
+        set({ authLoading: false });
+      }
     }
   },
 
@@ -41,35 +46,71 @@ export const useStore = create((set, get) => ({
   },
 
   loadBlogs: async () => {
-    const res = await getBlogs();
-    set({ blogs: res.data.blogs || [] });
+    try {
+      const res = await getBlogs();
+      set({ blogs: res.data.blogs || [] });
+    } catch (err) {
+      if (err.response?.status !== 429) {
+        console.error("Failed to load blogs:", err.message);
+        // Only clear data if it's a genuine auth failure
+        if (err.response?.status === 401) set({ blogs: [] });
+      }
+    }
   },
 
   loadResources: async () => {
-    const res = await getResources();
-    set({ resources: res.data.resources || [] });
+    try {
+      const res = await getResources();
+      set({ resources: res.data.resources || [] });
+    } catch (err) {
+      if (err.response?.status !== 429) {
+        console.error("Failed to load resources:", err.message);
+        if (err.response?.status === 401) set({ resources: [] });
+      }
+    }
   },
 
   loadMyBlogs: async () => {
-    const res = await getMyBlogs();
-    set({ myBlogs: res.data.blogs || [] });
+    try {
+      const res = await getMyBlogs();
+      set({ myBlogs: res.data.blogs || [] });
+    } catch (err) {
+      if (err.response?.status !== 429) {
+        console.error("Failed to load my blogs:", err.message);
+        if (err.response?.status === 401) set({ myBlogs: [] });
+      }
+    }
   },
 
   loadMyResources: async () => {
-    const res = await getMyResources();
-    set({ myResources: res.data.resources || [] });
+    try {
+      const res = await getMyResources();
+      set({ myResources: res.data.resources || [] });
+    } catch (err) {
+      if (err.response?.status !== 429) {
+        console.error("Failed to load my resources:", err.message);
+        if (err.response?.status === 401) set({ myResources: [] });
+      }
+    }
   },
 
   getFeedBlogs: () => {
     const { blogs, feedFilter } = get();
     const list = [...blogs];
+
     if (feedFilter === "trending") {
-      return list.sort((a, b) => {
-        const sa = (a.title?.length || 0) + (new Date(a.createdAt).getTime() % 9973);
-        const sb = (b.title?.length || 0) + (new Date(b.createdAt).getTime() % 9973);
-        return sb - sa;
-      });
+      return list
+        .map((b) => {
+          const hours =
+            (Date.now() - new Date(b.createdAt).getTime()) / (1000 * 60 * 60);
+
+          const score = (b.views || 0) / (hours + 1);
+
+          return { ...b, score };
+        })
+        .sort((a, b) => b.score - a.score);
     }
+
     return list.sort(
       (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
     );
@@ -89,17 +130,26 @@ export const useStore = create((set, get) => ({
   },
 
   getStats: () => {
-    const { blogs } = get();
+    const { blogs, resources } = get();
     const authorIds = new Set();
+
     for (const b of blogs) {
       const id = b.author?._id || b.author;
       if (id) authorIds.add(String(id));
     }
-    const totalStudents = Math.max(2, authorIds.size);
+
     return {
-      totalStudents,
+      totalStudents: authorIds.size,
       publishedBlogs: blogs.length,
-      sharedResources: get().resources.length,
+      sharedResources: resources.length,
     };
+  },
+
+  getTopTrendingBlogs: () => {
+    const { blogs } = get();
+
+    return [...blogs]
+      .sort((a, b) => (b.views || 0) - (a.views || 0))
+      .slice(0, 3);
   },
 }));

@@ -30,7 +30,7 @@ export default function Navbar() {
           <NavLink to="/resources" className={navCls}>
             Resources
           </NavLink>
-          <NavLink to="/summarizer" className={navCls}>
+          <NavLink to="/resume-builder" className={navCls}>
             AI Tools
           </NavLink>
         </nav>
@@ -72,9 +72,9 @@ export default function Navbar() {
           <NavLink to="/resources" className={navCls}>
             Resources
           </NavLink>
-          <NavLink to="/summarizer" className={navCls}>
-            AI Tools
-          </NavLink>
+         <NavLink to="/resume-builder" className={navCls}>
+  Resume Builder
+</NavLink>
         </nav>
       </div>
     </header>
