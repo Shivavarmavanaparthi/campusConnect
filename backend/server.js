@@ -33,17 +33,24 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: [
-      process.env.CLIENT_URL,
-      "http://localhost:5173",
-    ],
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true); // allow mobile / curl
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   })
 );
 
-app.options("*", cors());
 
+app.options("*", cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
 
 
 app.use(
