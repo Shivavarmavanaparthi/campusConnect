@@ -28,7 +28,7 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL, // 🔥 EXACT Vercel URL
+    origin: "https://campus-connect-six-lovat.vercel.app",
     credentials: true,
   })
 );
@@ -62,7 +62,7 @@ app.use("/api/ai", aiRoute);
 /* ================= ERROR HANDLER ================= */
 
 app.use((err, req, res, next) => {
-  console.error("🔥 ERROR:", err);
+  console.error("ERROR:", err);
 
   res.status(err.status || 500).json({
     message: err.message || "Internal server error",

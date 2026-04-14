@@ -39,13 +39,21 @@ const cookieOptions = {
 /* ================= SET COOKIES ================= */
 
 const setCookies = (res, accessToken, refreshToken) => {
+  const isProd = process.env.NODE_ENV === "production";
+
   res.cookie("accessToken", accessToken, {
-    ...cookieOptions,
+    httpOnly: true,
+    secure: isProd,          
+    sameSite: "None",        
+    path: "/",               
     maxAge: 15 * 60 * 1000,
   });
 
   res.cookie("refreshToken", refreshToken, {
-    ...cookieOptions,
+    httpOnly: true,
+    secure: isProd,
+    sameSite: "None",
+    path: "/",               
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 };
