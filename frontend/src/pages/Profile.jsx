@@ -62,13 +62,16 @@ export default function Profile() {
               <p className="text-2xl font-bold text-gray-900">{myResources.length}</p>
               <p className="text-xs font-medium text-gray-500">Resources</p>
             </div>
-            <button
-              type="button"
-              onClick={() => logout().then(() => navigate("/"))}
-              className="ml-auto rounded-full border border-gray-200 px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50"
-            >
-              Log out
-            </button>
+           <button
+  type="button"
+  onClick={() => logout().then(() => navigate("/"))}
+  className="ml-auto cursor-pointer rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-600 
+             shadow-sm transition-all duration-200 ease-out
+             hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md hover:text-gray-900
+             active:translate-y-0 active:shadow-sm"
+>
+  Log out
+</button>
           </div>
         </div>
       </div>

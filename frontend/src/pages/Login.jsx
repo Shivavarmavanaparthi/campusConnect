@@ -19,12 +19,21 @@ export default function Login() {
     e.preventDefault();
     setError("");
     setLoading(true);
+
     try {
-      await loginApi({ email, password });
+      await loginApi({
+        email: email.toLowerCase().trim(), // ✅ FIXED
+        password,
+      });
+
       await checkAuth();
+
       navigate(from, { replace: true });
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed.");
+      setError(
+        err.response?.data?.message ||
+          "Something went wrong. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -32,40 +41,63 @@ export default function Login() {
 
   return (
     <div className="min-h-svh bg-gradient-to-b from-violet-50/80 to-gray-50 px-4 py-10">
+      
+      {/* Logo */}
       <div className="mx-auto mb-10 flex max-w-md justify-center">
         <Link to="/" className="flex items-center gap-2">
           <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-600 text-white shadow-md">
             <Sparkles className="h-5 w-5" />
           </span>
-          <span className="text-xl font-bold text-gray-900">CampusConnect</span>
+          <span className="text-xl font-bold text-gray-900">
+            CampusConnect
+          </span>
         </Link>
       </div>
 
+      {/* Form Card */}
       <div className="mx-auto w-full max-w-md rounded-2xl bg-white p-8 shadow-xl ring-1 ring-gray-100">
-        <h1 className="text-center text-2xl font-bold text-gray-900">Welcome back</h1>
+        
+        <h1 className="text-center text-2xl font-bold text-gray-900">
+          Welcome back
+        </h1>
+
         <p className="mt-2 text-center text-sm text-gray-500">
           Sign in to write, upload, and use AI tools.
         </p>
 
         <form onSubmit={submit} className="mt-8 space-y-4">
+
+          {/* Error */}
           {error && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
+            <p
+              className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
+              role="alert"
+            >
               {error}
             </p>
           )}
+
+          {/* Email */}
           <label className="block">
-            <span className="mb-1.5 block text-xs font-semibold text-gray-700">Email</span>
+            <span className="mb-1.5 block text-xs font-semibold text-gray-700">
+              Email
+            </span>
             <input
               type="email"
               autoComplete="email"
+              autoFocus
               required
               className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm outline-none ring-violet-500/30 focus:ring-2"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
           </label>
+
+          {/* Password */}
           <label className="block">
-            <span className="mb-1.5 block text-xs font-semibold text-gray-700">Password</span>
+            <span className="mb-1.5 block text-xs font-semibold text-gray-700">
+              Password
+            </span>
             <input
               type="password"
               autoComplete="current-password"
@@ -75,18 +107,26 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </label>
+
+          {/* Button */}
           <button
             type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-violet-600 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-violet-700 disabled:opacity-60"
+            disabled={loading || !email || !password}
+            className="w-full rounded-lg bg-violet-600 py-3 text-sm font-semibold text-white shadow-md transition
+                       hover:bg-violet-700 active:scale-[0.98]
+                       disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {loading ? "Signing in…" : "Sign in"}
           </button>
         </form>
 
+        {/* Signup Link */}
         <p className="mt-6 text-center text-sm text-gray-500">
           No account?{" "}
-          <Link to="/signup" className="font-semibold text-violet-600 hover:underline">
+          <Link
+            to="/signup"
+            className="font-semibold text-violet-600 hover:underline"
+          >
             Create one
           </Link>
         </p>

@@ -1,41 +1,71 @@
 import axios from "axios";
 
 const baseURL =
-  import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:8001/api";
+  import.meta.env.VITE_API_URL?.replace(/\/$/, "") ||
+  "http://localhost:8001/api";
+
+/* ================= AXIOS INSTANCE ================= */
 
 export const API = axios.create({
   baseURL,
   withCredentials: true,
+  timeout: 10000, // prevents hanging requests
 });
 
+/* ================= REFRESH CONTROL ================= */
+
 let refreshPromise = null;
+
+/* ================= RESPONSE INTERCEPTOR ================= */
 
 API.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error.config;
-    if (!original || original._retry) return Promise.reject(error);
 
-    if (error.response?.status === 401 && original.url?.includes("/refresh-token")) {
+    if (!original || original._retry) {
       return Promise.reject(error);
     }
 
+    const status = error.response?.status;
     const url = original.url || "";
-    const isAuthAttempt =
+
+    // ❌ Do not retry these routes
+    if (
+      status === 401 &&
+      (url.includes("/auth/refresh-token") ||
+        url.includes("/auth/login") ||
+        url.includes("/auth/signup"))
+    ) {
+      return Promise.reject(error);
+    }
+
+    const isAuthRequest =
       url.includes("/auth/login") || url.includes("/auth/signup");
 
-    if (error.response?.status === 401 && !isAuthAttempt) {
+    // 🔥 Try refresh token for protected routes
+    if (status === 401 && !isAuthRequest) {
       original._retry = true;
+
       try {
         if (!refreshPromise) {
           refreshPromise = API.post("/auth/refresh-token").finally(() => {
             refreshPromise = null;
           });
         }
+
         await refreshPromise;
+
         return API(original);
-      } catch {
-        return Promise.reject(error);
+      } catch (err) {
+        // 🔥 Refresh failed → user is logged out
+        console.log("Session expired. Please login again.");
+
+        // OPTIONAL: clear frontend auth state here if using Zustand/Redux
+        // example:
+        // useStore.getState().logout();
+
+        return Promise.reject(err);
       }
     }
 
@@ -43,27 +73,45 @@ API.interceptors.response.use(
   }
 );
 
+/* ================= AUTH API ================= */
+
 export const signup = (data) => API.post("/auth/signup", data);
+
 export const login = (data) => API.post("/auth/login", data);
+
 export const logout = () => API.post("/auth/logout");
+
 export const getProfile = () => API.get("/auth/profile");
 
+/* ================= BLOG API ================= */
+
 export const getBlogs = () => API.get("/blogs");
+
 export const getBlogById = (id) => API.get(`/blogs/${id}`);
+
 export const getMyBlogs = () => API.get("/blogs/getMyBlogs");
+
 export const createBlog = (data) => API.post("/blogs", data);
+
 export const updateBlog = (id, data) => API.put(`/blogs/${id}`, data);
+
 export const deleteBlog = (id) => API.delete(`/blogs/${id}`);
 
+/* ================= RESOURCES API ================= */
+
 export const getResources = () => API.get("/resources");
+
 export const getMyResources = () => API.get("/resources/my");
+
 export const uploadResource = (formData) =>
   API.post("/resources/upload", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
-export const deleteResource = (id) => API.delete(`/resources/${id}`);
 
+export const deleteResource = (id) =>
+  API.delete(`/resources/${id}`);
 
+/* ================= AI ================= */
 
 export const buildResumePDF = (payload) =>
   API.post("/ai/resume/pdf", payload, {
