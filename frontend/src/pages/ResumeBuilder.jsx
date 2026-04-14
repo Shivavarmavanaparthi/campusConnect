@@ -424,7 +424,13 @@ export default function ResumeBuilder() {
     }
     setLoading(true);
     try {
-      const res = await buildResumePDF({ ...form, accentColor });
+      const res = await API.post("/ai/resume/pdf", 
+  { ...form, accentColor },
+  {
+    responseType: "blob",
+    withCredentials: true, 
+  }
+);
       const blob = res.data;
       const ctype = res.headers["content-type"] || "";
       if (ctype.includes("application/json") || blob.type === "application/json") {
