@@ -12,7 +12,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 
-dotenv.config({ override: true });
+dotenv.config();
 
 const app = express();
 
