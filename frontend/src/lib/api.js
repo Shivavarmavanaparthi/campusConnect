@@ -1,5 +1,7 @@
 import axios from "axios";
 
+/* ================= BASE URL ================= */
+
 const baseURL =
   import.meta.env.VITE_API_URL?.replace(/\/$/, "") ||
   "http://localhost:8001/api";
@@ -9,8 +11,10 @@ const baseURL =
 export const API = axios.create({
   baseURL,
   withCredentials: true,
-  timeout: 10000, // prevents hanging requests
+  timeout: 10000,
 });
+
+API.defaults.withCredentials = true;
 
 /* ================= REFRESH CONTROL ================= */
 
@@ -30,7 +34,7 @@ API.interceptors.response.use(
     const status = error.response?.status;
     const url = original.url || "";
 
-    // ❌ Do not retry these routes
+
     if (
       status === 401 &&
       (url.includes("/auth/refresh-token") ||
@@ -43,25 +47,26 @@ API.interceptors.response.use(
     const isAuthRequest =
       url.includes("/auth/login") || url.includes("/auth/signup");
 
-    // 🔥 Try refresh token for protected routes
+   
     if (status === 401 && !isAuthRequest) {
       original._retry = true;
 
       try {
         if (!refreshPromise) {
-          refreshPromise = API.post("/auth/refresh-token").finally(() => {
+          refreshPromise = API.post(
+            "/auth/refresh-token",
+            {},
+            { withCredentials: true } 
+          ).finally(() => {
             refreshPromise = null;
           });
         }
 
         await refreshPromise;
 
-        return API(original);
+        return API(original); // retry original request
       } catch (err) {
-       
         console.log("Session expired. Please login again.");
-
-      
         return Promise.reject(err);
       }
     }
