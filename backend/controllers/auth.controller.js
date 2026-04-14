@@ -28,22 +28,24 @@ const storeRefreshToken = async (userId, refreshToken) => {
   });
 };
 
-/* ================= COOKIES ================= */
+/* ================= COOKIE OPTIONS ================= */
+
+const cookieOptions = {
+  httpOnly: true,
+  secure: true,          
+  sameSite: "None",      
+};
+
+/* ================= SET COOKIES ================= */
 
 const setCookies = (res, accessToken, refreshToken) => {
   res.cookie("accessToken", accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "none",
-    secure:true,
+    ...cookieOptions,
     maxAge: 15 * 60 * 1000,
   });
 
   res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "none",
-    secure:true,
+    ...cookieOptions,
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 };
@@ -132,13 +134,11 @@ export const logout = async (req, res) => {
         );
 
         await redis.del(`refresh_token:${decoded.userId}`);
-      } catch (err) {
-        // ignore invalid token
-      }
+      } catch (err) {}
     }
 
-    res.clearCookie("accessToken");
-    res.clearCookie("refreshToken");
+    res.clearCookie("accessToken", cookieOptions);
+    res.clearCookie("refreshToken", cookieOptions);
 
     return res.json({ message: "Logged out successfully" });
   } catch (error) {
@@ -184,10 +184,7 @@ export const refreshToken = async (req, res) => {
     );
 
     res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
-      secure:true,
+      ...cookieOptions,
       maxAge: 15 * 60 * 1000,
     });
 
