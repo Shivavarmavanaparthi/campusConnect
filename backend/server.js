@@ -16,42 +16,24 @@ dotenv.config();
 
 const app = express();
 
-
+/* ================= PORT ================= */
 const PORT = process.env.PORT || 8080;
 
-
+/* ================= MIDDLEWARE ================= */
 
 app.use(express.json({ limit: "5mb" }));
 app.use(cookieParser());
 
-
-
-const allowedOrigins = [
-  process.env.CLIENT_URL,
-  "http://localhost:5173",
-].filter(Boolean);
+/* ================= CORS (FINAL FIX) ================= */
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true); // allow mobile / curl
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      } else {
-        return callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: process.env.CLIENT_URL, // 🔥 EXACT Vercel URL
     credentials: true,
   })
 );
 
-
-app.options("*", cors({
-  origin: allowedOrigins,
-  credentials: true
-}));
-
+/* ================= RATE LIMIT ================= */
 
 app.use(
   rateLimit({
@@ -61,7 +43,7 @@ app.use(
   })
 );
 
-
+/* ================= HEALTH ================= */
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({
@@ -70,22 +52,24 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+/* ================= ROUTES ================= */
+
 app.use("/api/auth", authRoute);
 app.use("/api/blogs", blogsRoute);
 app.use("/api/resources", resourceRoute);
 app.use("/api/ai", aiRoute);
 
-
+/* ================= ERROR HANDLER ================= */
 
 app.use((err, req, res, next) => {
-  console.error("GLOBAL ERROR:", err.message);
+  console.error("🔥 ERROR:", err);
 
   res.status(err.status || 500).json({
     message: err.message || "Internal server error",
   });
 });
 
-
+/* ================= START SERVER ================= */
 
 const startServer = async () => {
   try {

@@ -58,13 +58,10 @@ API.interceptors.response.use(
 
         return API(original);
       } catch (err) {
-        // 🔥 Refresh failed → user is logged out
+       
         console.log("Session expired. Please login again.");
 
-        // OPTIONAL: clear frontend auth state here if using Zustand/Redux
-        // example:
-        // useStore.getState().logout();
-
+      
         return Promise.reject(err);
       }
     }
