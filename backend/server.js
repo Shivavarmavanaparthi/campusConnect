@@ -15,7 +15,9 @@ import rateLimit from "express-rate-limit";
 dotenv.config({ override: true });
 
 const app = express();
-const PORT = process.env.PORT || 8001;
+
+
+const PORT = process.env.PORT || 8080;
 
 
 
@@ -32,51 +34,31 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-     
       if (!origin) return callback(null, true);
 
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
-      return callback(null, false); 
+      return callback(null, false);
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    exposedHeaders: ["X-Resume-Pdf-Source"],
   })
 );
-
 
 app.options("*", cors());
 
 
 
-const authLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000,
-  max: 20,
-  message: { message: "Too many attempts, try again in aminute." },
-});
-
-const otpLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000,
-  max: 5,
-  message: { message: "Too many OTP requests. Please wait for 1 minute." },
-});
-
-const generalLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000,
-  max: 100,
-  message: { message: "Too many requests. Please try after few minutes." },
-});
-
-
-
-app.use("/api/auth/verify-otp", otpLimiter);
-app.use("/api/auth/resend-otp", otpLimiter);
-app.use("/api/auth", authLimiter);
-app.use("/api", generalLimiter);
+app.use(
+  rateLimit({
+    windowMs: 1 * 60 * 1000,
+    max: 100,
+    message: { message: "Too many requests. Try again later." },
+  })
+);
 
 
 
@@ -86,8 +68,6 @@ app.get("/api/health", (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
-
-
 
 app.use("/api/auth", authRoute);
 app.use("/api/blogs", blogsRoute);
@@ -101,16 +81,23 @@ app.use((err, req, res, next) => {
 
   res.status(err.status || 500).json({
     message: err.message || "Internal server error",
-    ...(process.env.NODE_ENV === "development" && {
-      stack: err.stack,
-    }),
   });
 });
 
 
 
-connectDB();
+const startServer = async () => {
+  try {
+    await connectDB();
+    console.log("MongoDB connected");
 
-app.listen(PORT, () => {
-  console.log(`Server started on port: ${PORT}`);
-});
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch (err) {
+    console.error("DB connection failed:", err);
+    process.exit(1);
+  }
+};
+
+startServer();
