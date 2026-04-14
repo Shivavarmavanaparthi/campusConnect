@@ -24,18 +24,22 @@ export const useStore = create((set, get) => ({
   setResourceQuery: (resourceQuery) => set({ resourceQuery }),
 
   checkAuth: async () => {
-    try {
-      const res = await getProfile();
-      set({ user: res.data.user, authLoading: false });
-    } catch (err) {
-      const status = err.response?.status;
-      if (status === 401 || status === 403) {
-        set({ user: null, authLoading: false });
-      } else {
-        set({ authLoading: false });
-      }
-    }
-  },
+  try {
+    const res = await getProfile();
+
+    set({
+      user: res.data.user,
+      authLoading: false,
+    });
+  } catch (err) {
+    console.log("Auth check failed:", err.message);
+
+    set({
+      user: null,
+      authLoading: false,
+    });
+  }
+},
 
   logout: async () => {
     try {

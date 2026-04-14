@@ -35,6 +35,7 @@ const setCookies = (res, accessToken, refreshToken) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "none",
+    secure:true,
     maxAge: 15 * 60 * 1000,
   });
 
@@ -42,6 +43,7 @@ const setCookies = (res, accessToken, refreshToken) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "none",
+    secure:true,
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 };
@@ -185,6 +187,7 @@ export const refreshToken = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "none",
+      secure:true,
       maxAge: 15 * 60 * 1000,
     });
 
