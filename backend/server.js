@@ -26,9 +26,20 @@ app.use(cookieParser());
 
 /* ================= CORS (FINAL FIX) ================= */
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://campus-connect-six-lovat.vercel.app"
+];
+
 app.use(
   cors({
-    origin: "https://campus-connect-six-lovat.vercel.app",
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );

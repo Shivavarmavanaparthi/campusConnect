@@ -4,7 +4,7 @@ import axios from "axios";
 
 const baseURL =
   import.meta.env.VITE_API_URL?.replace(/\/$/, "") ||
-  "http://localhost:8001/api";
+  "http://localhost:8080/api";
 
 /* ================= AXIOS INSTANCE ================= */
 

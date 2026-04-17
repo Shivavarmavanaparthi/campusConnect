@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Download, FileUser, Plus, Trash2, Eye, EyeOff } from "lucide-react";
-import { buildResumePDF } from "../lib/api";
+import { API } from "../lib/api";
 
 const ACCENT_PRESETS = [
   { label: "Forest", value: "#0e6e55" },
