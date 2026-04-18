@@ -32,28 +32,27 @@ const storeRefreshToken = async (userId, refreshToken) => {
 
 const cookieOptions = {
   httpOnly: true,
-  secure: true,          
-  sameSite: "None",      
+  secure: true,
+  sameSite: "Lax",
+  path: "/",
 };
 
 /* ================= SET COOKIES ================= */
 
 const setCookies = (res, accessToken, refreshToken) => {
-  const isProd = process.env.NODE_ENV === "production";
-
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: "true",          
-    sameSite: "None",        
-    path: "/",               
+    secure: true,
+    sameSite: "Lax",
+    path: "/",
     maxAge: 15 * 60 * 1000,
   });
 
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: "true",
-    sameSite: "None",
-    path: "/",               
+    secure: true,
+    sameSite: "Lax",
+    path: "/",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 };
@@ -145,9 +144,19 @@ export const logout = async (req, res) => {
       } catch (err) {}
     }
 
-    res.clearCookie("accessToken", cookieOptions);
-    res.clearCookie("refreshToken", cookieOptions);
+   res.clearCookie("accessToken", {
+  httpOnly: true,
+  secure: true,
+  sameSite: "Lax",
+  path: "/",
+});
 
+res.clearCookie("refreshToken", {
+  httpOnly: true,
+  secure: true,
+  sameSite: "Lax",
+  path: "/",
+});
     return res.json({ message: "Logged out successfully" });
   } catch (error) {
     console.log("Logout error:", error.message);
