@@ -30,31 +30,26 @@ const storeRefreshToken = async (userId, refreshToken) => {
 
 /* ================= COOKIE OPTIONS ================= */
 
+const isProd = process.env.NODE_ENV === "production";
+
 const cookieOptions = {
   httpOnly: true,
-  secure: true,
-  sameSite: "Lax",
+  secure: isProd,
+  sameSite: isProd ? "None" : "Lax",
   path: "/",
 };
-
 /* ================= SET COOKIES ================= */
 
 const setCookies = (res, accessToken, refreshToken) => {
-  res.cookie("accessToken", accessToken, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "Lax",
-    path: "/",
-    maxAge: 15 * 60 * 1000,
-  });
+ res.cookie("accessToken", accessToken, {
+  ...cookieOptions,
+  maxAge: 15 * 60 * 1000,
+});
 
-  res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "Lax",
-    path: "/",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
+   res.cookie("refreshToken", refreshToken, {
+  ...cookieOptions,
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+});
 };
 
 /* ================= SIGNUP ================= */
