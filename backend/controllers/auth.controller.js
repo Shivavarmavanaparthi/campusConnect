@@ -2,8 +2,6 @@ import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import redis from "../lib/redis.js";
 
-/* ================= TOKENS ================= */
-
 const generateTokens = (userId) => {
   const accessToken = jwt.sign(
     { userId },
@@ -20,39 +18,30 @@ const generateTokens = (userId) => {
   return { accessToken, refreshToken };
 };
 
-/* ================= REDIS ================= */
-
 const storeRefreshToken = async (userId, refreshToken) => {
   await redis.set(`refresh_token:${userId}`, refreshToken, {
     EX: 7 * 24 * 60 * 60,
   });
 };
 
-/* ================= COOKIE OPTIONS ================= */
-
-const isProd = process.env.NODE_ENV === "production";
-
 const cookieOptions = {
   httpOnly: true,
-  secure: isProd,
-  sameSite: isProd ? "None" : "Lax",
+  secure: true,
+  sameSite: "none",
   path: "/",
 };
-/* ================= SET COOKIES ================= */
 
 const setCookies = (res, accessToken, refreshToken) => {
- res.cookie("accessToken", accessToken, {
-  ...cookieOptions,
-  maxAge: 15 * 60 * 1000,
-});
+  res.cookie("accessToken", accessToken, {
+    ...cookieOptions,
+    maxAge: 15 * 60 * 1000,
+  });
 
-   res.cookie("refreshToken", refreshToken, {
-  ...cookieOptions,
-  maxAge: 7 * 24 * 60 * 60 * 1000,
-});
+  res.cookie("refreshToken", refreshToken, {
+    ...cookieOptions,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
 };
-
-/* ================= SIGNUP ================= */
 
 export const signup = async (req, res) => {
   try {
@@ -87,12 +76,9 @@ export const signup = async (req, res) => {
       email: user.email,
     });
   } catch (error) {
-    console.log("Signup error:", error.message);
     return res.status(500).json({ message: error.message });
   }
 };
-
-/* ================= LOGIN ================= */
 
 export const login = async (req, res) => {
   try {
@@ -117,12 +103,9 @@ export const login = async (req, res) => {
       email: user.email,
     });
   } catch (error) {
-    console.log("Login error:", error.message);
     return res.status(500).json({ message: error.message });
   }
 };
-
-/* ================= LOGOUT ================= */
 
 export const logout = async (req, res) => {
   try {
@@ -130,46 +113,31 @@ export const logout = async (req, res) => {
 
     if (token) {
       try {
-        const decoded = jwt.verify(
-          token,
-          process.env.REFRESH_TOKEN_SECRET
-        );
-
+        const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
         await redis.del(`refresh_token:${decoded.userId}`);
       } catch (err) {}
     }
 
-   res.clearCookie("accessToken", {
-  httpOnly: true,
-  secure: true,
-  sameSite: "Lax",
-  path: "/",
-});
+    res.clearCookie("accessToken", cookieOptions);
+    res.clearCookie("refreshToken", cookieOptions);
 
-res.clearCookie("refreshToken", {
-  httpOnly: true,
-  secure: true,
-  sameSite: "Lax",
-  path: "/",
-});
     return res.json({ message: "Logged out successfully" });
   } catch (error) {
-    console.log("Logout error:", error.message);
     return res.status(500).json({ message: error.message });
   }
 };
 
-/* ================= PROFILE ================= */
-
 export const getProfile = async (req, res) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     return res.json({ user: req.user });
   } catch (error) {
     return res.status(500).json({ message: "Server error" });
   }
 };
-
-/* ================= REFRESH TOKEN ================= */
 
 export const refreshToken = async (req, res) => {
   try {
@@ -181,9 +149,7 @@ export const refreshToken = async (req, res) => {
 
     const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
 
-    const storedToken = await redis.get(
-      `refresh_token:${decoded.userId}`
-    );
+    const storedToken = await redis.get(`refresh_token:${decoded.userId}`);
 
     if (storedToken !== token) {
       return res.status(401).json({ message: "Invalid refresh token" });
@@ -202,7 +168,6 @@ export const refreshToken = async (req, res) => {
 
     return res.json({ message: "Token refreshed" });
   } catch (error) {
-    console.log("Refresh error:", error.message);
     return res.status(500).json({ message: error.message });
   }
 };
