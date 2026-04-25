@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { FileText, FileUser, Search, Sparkles, TrendingUp } from "lucide-react";
+import { FileText, FileUser, Search, Sparkles, TrendingUp, ListTodo } from "lucide-react";
 import { useMemo } from "react";
 import { useStore } from "../state/useStore";
 
@@ -99,7 +99,13 @@ export function WorkSmarter() {
         AI tools tuned for study sessions(coming soon) — summarize PDFs, build a LaTeX resume PDF
       </p>
       <div className="relative mt-4 space-y-2">
-    
+        <Link
+          to="/todos"
+          className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2.5 text-xs font-medium text-gray-800 shadow-sm transition hover:bg-gray-50"
+        >
+          <ListTodo className="h-4 w-4 text-violet-600" />
+          Task Manager
+        </Link>
         <Link
           to="/resume-builder"
           className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2.5 text-xs font-medium text-gray-800 shadow-sm transition hover:bg-gray-50"

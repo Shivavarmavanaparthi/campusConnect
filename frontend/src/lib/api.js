@@ -120,3 +120,30 @@ export const buildResumePDF = (payload) =>
     responseType: "blob",
     headers: { "Content-Type": "application/json" },
   });
+
+/* ================= TODOS API ================= */
+
+export const getTodos = (params = {}) => API.get("/todos", { params });
+
+export const getTodoById = (id) => API.get(`/todos/${id}`);
+
+export const createTodo = (data) => API.post("/todos", data);
+
+export const updateTodo = (id, data) => API.put(`/todos/${id}`, data);
+
+export const deleteTodo = (id) => API.delete(`/todos/${id}`);
+
+export const getTodoStats = () => API.get("/todos/stats");
+
+export const getUpcomingTodos = (days = 7) => 
+  API.get("/todos/upcoming", { params: { days } });
+
+export const getOverdueTodos = () => API.get("/todos/overdue");
+
+export const updateChecklistItem = (id, itemIndex, completed) =>
+  API.put(`/todos/${id}/checklist/${itemIndex}`, { completed });
+
+export const bulkUpdateTodos = (ids, updates) =>
+  API.patch("/todos/bulk", { ids, updates });
+
+export const deleteCompletedTodos = () => API.delete("/todos/completed");

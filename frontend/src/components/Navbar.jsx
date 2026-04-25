@@ -1,5 +1,5 @@
 import { Link, NavLink } from "react-router-dom";
-import { BookOpen, FileUp, Sparkles } from "lucide-react";
+import { BookOpen, FileUp, Sparkles, ListTodo } from "lucide-react";
 import { useStore } from "../state/useStore";
 import EmailAvatar from "./EmailAvatar";
 
@@ -30,6 +30,9 @@ export default function Navbar() {
           <NavLink to="/resources" className={navCls}>
             Resources
           </NavLink>
+          <NavLink to="/todos" className={navCls}>
+            Task-Manager
+          </NavLink>
           <NavLink to="/resume-builder" className={navCls}>
             AI Tools
           </NavLink>
@@ -42,6 +45,13 @@ export default function Navbar() {
           >
             <BookOpen className="h-3.5 w-3.5" />
             Write Blog
+          </Link>
+          <Link
+            to="/todos"
+            className="hidden items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition hover:border-gray-300 hover:bg-gray-50 sm:inline-flex"
+          >
+            <ListTodo className="h-3.5 w-3.5" />
+            Tasks
           </Link>
           <Link
             to="/upload-resource"
@@ -64,19 +74,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      <div className="flex border-t border-gray-50 px-4 py-2 md:hidden">
-        <nav className="flex min-w-0 flex-1 justify-around gap-2">
-          <NavLink to="/" className={navCls} end>
-            Blogs
-          </NavLink>
-          <NavLink to="/resources" className={navCls}>
-            Resources
-          </NavLink>
-         <NavLink to="/resume-builder" className={navCls}>
-  Resume Builder
-</NavLink>
-        </nav>
-      </div>
+     
     </header>
   );
 }

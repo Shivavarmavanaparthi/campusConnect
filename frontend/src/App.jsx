@@ -5,6 +5,7 @@ import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import Resources from "./pages/Resources";
+import TodoDashboard from "./pages/TodoDashboard";
 
 import ResumeBuilder from "./pages/ResumeBuilder";
 import Profile from "./pages/Profile";
@@ -70,6 +71,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <UploadResource />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/todos"
+            element={
+              <ProtectedRoute>
+                <TodoDashboard />
               </ProtectedRoute>
             }
           />

@@ -6,6 +6,13 @@ import {
   logout as apiLogout,
   getMyBlogs,
   getMyResources,
+  getTodos,
+  createTodo,
+  updateTodo,
+  deleteTodo,
+  getTodoStats,
+  getUpcomingTodos,
+  getOverdueTodos,
 } from "../lib/api";
 
 export const useStore = create((set, get) => ({
@@ -15,13 +22,28 @@ export const useStore = create((set, get) => ({
   resources: [],
   myBlogs: [],
   myResources: [],
+  todos: [],
+  todoStats: null,
+  upcomingTodos: [],
+  overdueTodos: [],
   feedFilter: "latest",
   resourceCategory: "all",
   resourceQuery: "",
+  todoFilter: {
+    status: "all",
+    category: "all",
+    priority: "all",
+    search: "",
+    sortBy: "dueDate",
+    order: "asc"
+  },
 
   setFeedFilter: (feedFilter) => set({ feedFilter }),
   setResourceCategory: (resourceCategory) => set({ resourceCategory }),
   setResourceQuery: (resourceQuery) => set({ resourceQuery }),
+  setTodoFilter: (filter) => set((state) => ({
+    todoFilter: { ...state.todoFilter, ...filter }
+  })),
 
   checkAuth: async () => {
   try {
@@ -98,6 +120,100 @@ export const useStore = create((set, get) => ({
     }
   },
 
+  // Todo actions
+  loadTodos: async () => {
+    try {
+      const { todoFilter } = get();
+      const params = {};
+      
+      if (todoFilter.status !== "all") params.status = todoFilter.status;
+      if (todoFilter.category !== "all") params.category = todoFilter.category;
+      if (todoFilter.priority !== "all") params.priority = todoFilter.priority;
+      if (todoFilter.search) params.search = todoFilter.search;
+      if (todoFilter.sortBy) params.sortBy = todoFilter.sortBy;
+      if (todoFilter.order) params.order = todoFilter.order;
+
+      const res = await getTodos(params);
+      set({ todos: res.data.todos || [] });
+    } catch (err) {
+      if (err.response?.status !== 429) {
+        console.error("Failed to load todos:", err.message);
+        if (err.response?.status === 401) set({ todos: [] });
+      }
+    }
+  },
+
+  loadTodoStats: async () => {
+    try {
+      const res = await getTodoStats();
+      set({ todoStats: res.data.stats });
+    } catch (err) {
+      console.error("Failed to load todo stats:", err.message);
+    }
+  },
+
+  loadUpcomingTodos: async (days = 7) => {
+    try {
+      const res = await getUpcomingTodos(days);
+      set({ upcomingTodos: res.data.todos || [] });
+    } catch (err) {
+      console.error("Failed to load upcoming todos:", err.message);
+    }
+  },
+
+  loadOverdueTodos: async () => {
+    try {
+      const res = await getOverdueTodos();
+      set({ overdueTodos: res.data.todos || [] });
+    } catch (err) {
+      console.error("Failed to load overdue todos:", err.message);
+    }
+  },
+
+  addTodo: async (data) => {
+    try {
+      const res = await createTodo(data);
+      set((state) => ({ todos: [res.data.todo, ...state.todos] }));
+      // Refresh stats
+      get().loadTodoStats();
+      return res.data;
+    } catch (err) {
+      console.error("Failed to create todo:", err.message);
+      throw err;
+    }
+  },
+
+  editTodo: async (id, data) => {
+    try {
+      const res = await updateTodo(id, data);
+      set((state) => ({
+        todos: state.todos.map((todo) =>
+          todo._id === id ? res.data.todo : todo
+        )
+      }));
+      // Refresh stats
+      get().loadTodoStats();
+      return res.data;
+    } catch (err) {
+      console.error("Failed to update todo:", err.message);
+      throw err;
+    }
+  },
+
+  removeTodo: async (id) => {
+    try {
+      await deleteTodo(id);
+      set((state) => ({
+        todos: state.todos.filter((todo) => todo._id !== id)
+      }));
+      // Refresh stats
+      get().loadTodoStats();
+    } catch (err) {
+      console.error("Failed to delete todo:", err.message);
+      throw err;
+    }
+  },
+
   getFeedBlogs: () => {
     const { blogs, feedFilter } = get();
     const list = [...blogs];
@@ -146,6 +262,23 @@ export const useStore = create((set, get) => ({
       totalStudents: authorIds.size,
       publishedBlogs: blogs.length,
       sharedResources: resources.length,
+    };
+  },
+
+  getFilteredTodos: () => {
+    const { todos } = get();
+    return todos;
+  },
+
+  getTodoStats: () => {
+    const { todoStats } = get();
+    return todoStats || {
+      total: 0,
+      completed: 0,
+      pending: 0,
+      inProgress: 0,
+      overdue: 0,
+      completionRate: 0
     };
   },
 

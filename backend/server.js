@@ -7,6 +7,7 @@ import blogsRoute from "./routes/blogs.route.js";
 import authRoute from "./routes/auth.route.js";
 import resourceRoute from "./routes/resources.route.js";
 import aiRoute from "./routes/ai.route.js";
+import todoRoute from "./routes/todo.route.js";
 
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -63,6 +64,7 @@ app.use("/api/auth", authRoute);
 app.use("/api/blogs", blogsRoute);
 app.use("/api/resources", resourceRoute);
 app.use("/api/ai", aiRoute);
+app.use("/api/todos", todoRoute);
 
 /* ================= ERROR HANDLER ================= */
 
