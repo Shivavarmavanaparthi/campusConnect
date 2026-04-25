@@ -34,7 +34,7 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: true,
+    origin: "https://campus-connect-six-lovat.vercel.app",
     credentials: true,
   })
 );
