@@ -8,7 +8,7 @@ export default function CampusFeed() {
   const setFeedFilter = useStore((s) => s.setFeedFilter);
   const blogs = useStore((s) => s.blogs);
 
-  // ✅ Proper filtering + trending logic
+ 
   const filteredBlogs = useMemo(() => {
     const list = [...blogs];
 
