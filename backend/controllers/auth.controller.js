@@ -2,6 +2,8 @@ import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import redis from "../lib/redis.js";
 
+/* ================= TOKENS ================= */
+
 const generateTokens = (userId) => {
   const accessToken = jwt.sign(
     { userId },
@@ -18,11 +20,15 @@ const generateTokens = (userId) => {
   return { accessToken, refreshToken };
 };
 
+/* ================= REDIS ================= */
+
 const storeRefreshToken = async (userId, refreshToken) => {
   await redis.set(`refresh_token:${userId}`, refreshToken, {
     EX: 7 * 24 * 60 * 60,
   });
 };
+
+/* ================= COOKIE OPTIONS ================= */
 
 const cookieOptions = {
   httpOnly: true,
@@ -30,6 +36,8 @@ const cookieOptions = {
   sameSite: "none",
   path: "/",
 };
+
+/* ================= SET COOKIES ================= */
 
 const setCookies = (res, accessToken, refreshToken) => {
   res.cookie("accessToken", accessToken, {
@@ -43,20 +51,28 @@ const setCookies = (res, accessToken, refreshToken) => {
   });
 };
 
+/* ================= SIGNUP ================= */
+
 export const signup = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-      return res.status(400).json({ message: "All fields required" });
+      return res.status(400).json({
+        message: "All fields required",
+      });
     }
 
     const cleanEmail = email.toLowerCase().trim();
 
-    const userExists = await User.findOne({ email: cleanEmail });
+    const userExists = await User.findOne({
+      email: cleanEmail,
+    });
 
     if (userExists) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({
+        message: "User already exists",
+      });
     }
 
     const user = await User.create({
@@ -65,9 +81,15 @@ export const signup = async (req, res) => {
       password,
     });
 
-    const { accessToken, refreshToken } = generateTokens(user._id);
+    const { accessToken, refreshToken } = generateTokens(
+      user._id.toString()
+    );
 
-    await storeRefreshToken(user._id, refreshToken);
+    await storeRefreshToken(
+      user._id.toString(),
+      refreshToken
+    );
+
     setCookies(res, accessToken, refreshToken);
 
     return res.status(201).json({
@@ -76,36 +98,70 @@ export const signup = async (req, res) => {
       email: user.email,
     });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    console.log("Signup error:", error);
+    return res.status(500).json({
+      message: error.message,
+    });
   }
 };
+
+/* ================= LOGIN ================= */
 
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const cleanEmail = email.toLowerCase().trim();
-
-    const user = await User.findOne({ email: cleanEmail });
-
-    if (!user || !(await user.comparePassword(password))) {
-      return res.status(400).json({ message: "Invalid email or password" });
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Email and password required",
+      });
     }
 
-    const { accessToken, refreshToken } = generateTokens(user._id);
+    const cleanEmail = email.toLowerCase().trim();
 
-    await storeRefreshToken(user._id, refreshToken);
+    const user = await User.findOne({
+      email: cleanEmail,
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "Invalid email or password",
+      });
+    }
+
+    const passwordMatch = await user.comparePassword(password);
+
+    if (!passwordMatch) {
+      return res.status(400).json({
+        message: "Invalid email or password",
+      });
+    }
+
+    const { accessToken, refreshToken } = generateTokens(
+      user._id.toString()
+    );
+
+    await storeRefreshToken(
+      user._id.toString(),
+      refreshToken
+    );
+
     setCookies(res, accessToken, refreshToken);
 
-    return res.json({
+    return res.status(200).json({
       _id: user._id,
       name: user.name,
       email: user.email,
     });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    console.log("Login error:", error);
+    return res.status(500).json({
+      message: error.message,
+    });
   }
 };
+
+/* ================= LOGOUT ================= */
 
 export const logout = async (req, res) => {
   try {
@@ -113,46 +169,78 @@ export const logout = async (req, res) => {
 
     if (token) {
       try {
-        const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
-        await redis.del(`refresh_token:${decoded.userId}`);
-      } catch (err) {}
+        const decoded = jwt.verify(
+          token,
+          process.env.REFRESH_TOKEN_SECRET
+        );
+
+        await redis.del(
+          `refresh_token:${decoded.userId}`
+        );
+      } catch (err) {
+        console.log("Logout token error:", err.message);
+      }
     }
 
-    res.clearCookie("accessToken", cookieOptions);
-    res.clearCookie("refreshToken", cookieOptions);
+    res.clearCookie("accessToken", {
+      ...cookieOptions,
+    });
 
-    return res.json({ message: "Logged out successfully" });
+    res.clearCookie("refreshToken", {
+      ...cookieOptions,
+    });
+
+    return res.status(200).json({
+      message: "Logged out successfully",
+    });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    console.log("Logout error:", error);
+    return res.status(500).json({
+      message: error.message,
+    });
   }
 };
+
+/* ================= PROFILE ================= */
 
 export const getProfile = async (req, res) => {
   try {
-    if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-
-    return res.json({ user: req.user });
+    return res.status(200).json({
+      user: req.user,
+    });
   } catch (error) {
-    return res.status(500).json({ message: "Server error" });
+    console.log("Profile error:", error);
+    return res.status(500).json({
+      message: "Server error",
+    });
   }
 };
+
+/* ================= REFRESH TOKEN ================= */
 
 export const refreshToken = async (req, res) => {
   try {
     const token = req.cookies.refreshToken;
 
     if (!token) {
-      return res.status(401).json({ message: "No refresh token" });
+      return res.status(401).json({
+        message: "No refresh token",
+      });
     }
 
-    const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+    const decoded = jwt.verify(
+      token,
+      process.env.REFRESH_TOKEN_SECRET
+    );
 
-    const storedToken = await redis.get(`refresh_token:${decoded.userId}`);
+    const storedToken = await redis.get(
+      `refresh_token:${decoded.userId}`
+    );
 
-    if (storedToken !== token) {
-      return res.status(401).json({ message: "Invalid refresh token" });
+    if (!storedToken || storedToken !== token) {
+      return res.status(401).json({
+        message: "Invalid refresh token",
+      });
     }
 
     const accessToken = jwt.sign(
@@ -166,8 +254,13 @@ export const refreshToken = async (req, res) => {
       maxAge: 15 * 60 * 1000,
     });
 
-    return res.json({ message: "Token refreshed" });
+    return res.status(200).json({
+      message: "Token refreshed",
+    });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    console.log("Refresh error:", error);
+    return res.status(401).json({
+      message: "Invalid or expired refresh token",
+    });
   }
 };

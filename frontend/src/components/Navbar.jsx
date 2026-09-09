@@ -74,7 +74,22 @@ export default function Navbar() {
         </div>
       </div>
 
-     
+      <div className="flex border-t border-gray-50 px-4 py-2 md:hidden">
+        <nav className="flex min-w-0 flex-1 justify-around gap-2">
+          <NavLink to="/" className={navCls} end>
+            Blogs
+          </NavLink>
+          <NavLink to="/resources" className={navCls}>
+            Resources
+          </NavLink>
+          <NavLink to="/todos" className={navCls}>
+            Task-Manager
+          </NavLink>
+          <NavLink to="/resume-builder" className={navCls}>
+            AI
+          </NavLink>
+        </nav>
+      </div>
     </header>
   );
 }
