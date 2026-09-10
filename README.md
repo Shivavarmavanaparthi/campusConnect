@@ -2,8 +2,7 @@
 
 CampusConnect is a modern campus hub where students can share Blogs, add Resources, and use an AI PDF Summarizer. It provides an end-to-end experience with authentication-protected features and a clean, modern UI.
 
-## Live UI [NOTE: This is a replit demo of our application created from the backend and frontend  files of our hardcoded folder .To ensure smooth working of the application we put a replit deployment here]
-https://campus-connect-hub--mailfromshivava.replit.app/
+## Live UI https://campus-connect-six-lovat.vercel.app/
 
 ## Tech Stack
 Frontend: React (Vite) + Tailwind CSS + Zustand + Axios (withCredentials: true)  
